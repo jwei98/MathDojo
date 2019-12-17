@@ -3,8 +3,8 @@ ask-sdk-core==1.12.0
 ask-sdk-dynamodb-persistence-adapter==1.12.0
 ask-sdk-model==1.20.1
 ask-sdk-runtime==1.12.0
-boto3==1.10.40
-botocore==1.13.40
+boto3==1.10.41
+botocore==1.13.41
 certifi==2019.11.28
 chardet==3.0.4
 docutils==0.15.2

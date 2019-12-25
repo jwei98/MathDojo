@@ -4,7 +4,7 @@ Resources:
   MathDojo:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: MathDojo-SAM
+      FunctionName: MathDojo
       Handler: app.handler
       Runtime: python3.8
       CodeUri: ./

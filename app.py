@@ -16,15 +16,6 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
 
     Also handles setting initial game state.
     """
-    # Set session attributes.
-    # TODO: This could probably be abstracted to a common class.
-    attr = handler_input.attributes_manager.session_attributes
-    if not attr:
-        attr['score'] = 0
-        attr['questions_asked'] = 0
-        attr['game_state'] = 'ENDED'
-    handler_input.attributes_manager.session_attributes = attr
-
     speech_text = ("Welcome to the Math Dojo! Would you like to play? "
                    "If so, specify whether you'd like to practice Addition, "
                    " Subtraction, Multiplication, or Division")

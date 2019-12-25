@@ -1,5 +1,5 @@
 """
-Main driver for Math Dojo Alexa skill.
+Lambda functions for Math Dojo Alexa skill.
 """
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.utils import is_request_type, is_intent_name

@@ -18,7 +18,7 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
     """
     # Set session attributes.
     # TODO: This could probably be abstracted to a common class.
-    attr = handler_input.attributes_manager.persistent_attributes
+    attr = handler_input.attributes_manager.session_attributes
     if not attr:
         attr['score'] = 0
         attr['questions_asked'] = 0

@@ -7,6 +7,7 @@ from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
 from ask_sdk_model.ui import SimpleCard
 
+
 sb = SkillBuilder()
 
 

@@ -17,11 +17,15 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
 
     Also handles setting initial game state.
     """
+    session_attr = handler_input.attributes_manager.session_attributes
+    session_attr['gameStarted'] = False
+
     speech_text = ("Welcome to the Math Dojo! Would you like to play? "
                    "If so, specify whether you'd like to practice Addition, "
                    " Subtraction, Multiplication, or Division")
     reprompt = ("Would you like to practice Addition, Subtraction, "
                 "Multiplication, or Division?")
+
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 

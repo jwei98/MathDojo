@@ -33,7 +33,7 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
     session_attr['gameStarted'] = False
 
     speech_text = ('Welcome to the Math Dojo! Would you like to '
-                   'practice Addition, Subtraction, Multiplication, or Division')
+                   'practice Addition, Subtraction, Multiplication, or Division?')
     reprompt = ('Would you like to practice Addition, Subtraction, '
                 'Multiplication, or Division?')
 
@@ -122,14 +122,14 @@ def answer_handler(handler_input: HandlerInput) -> Response:
         final_score = session_attr['score']
         speech_text += ('Congratulations! Your final score was '
                         f'{final_score} out of 10. ')
-        new_game_prompt = ('Do you want to train again in Addition, Subtraction, '
-                           'Multiplication, or Division??')
+        new_game_prompt = ('Would you like to train again in Addition, Subtraction, '
+                           'Multiplication, or Division?')
         speech_text += new_game_prompt
         reprompt = new_game_prompt
         session_attr['gameStarted'] = False
     else:
         speech_text += (
-            f'Now, {ask_question(session_attr)}')
+            f'Next question: {ask_question(session_attr)}')
         reprompt = ('Sorry, I didn\'t get that. {ask_question(session_attr)}')
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response

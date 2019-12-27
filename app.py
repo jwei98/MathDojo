@@ -35,8 +35,12 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
                     not currently_playing(input) and
                     is_intent_name("GameTypeIntent")(input))
 def choose_game_type_handler(handler_input):
+    """Handler for choosing which game type to play.
+
+    Sets the 'operator' value in session attributes.
+    """
     game_type = (handler_input.request_envelope.request.intent.slots[
-        "GameType"].value)
+        "GameType"].value).upper()  # uppercase for consistency across inputs.
     session_attr = handler_input.attributes_manager.session_attributes
     session_attr['operator'] = gametype_to_operator[game_type]
 

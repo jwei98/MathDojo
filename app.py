@@ -55,6 +55,19 @@ def choose_game_type_handler(handler_input):
     return handler_input.response_builder.response
 
 
+@sb.request_handler(
+    can_handle_func=lambda input:
+        is_intent_name("AMAZON.CancelIntent")(input) or
+        is_intent_name("AMAZON.StopIntent")(input))
+def cancel_and_stop_intent_handler(handler_input: HandlerInput) -> Response:
+    """Single handler for Cancel and Stop Intent."""
+    speech_text = "Thanks for playing Math Dojo!!"
+
+    handler_input.response_builder.speak(
+        speech_text).set_should_end_session(True)
+    return handler_input.response_builder.response
+
+
 """Helper Functions."""
 
 

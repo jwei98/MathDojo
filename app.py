@@ -13,10 +13,7 @@ sb = SkillBuilder()
 
 @sb.request_handler(can_handle_func=is_request_type("LaunchRequest"))
 def launch_request_handler(handler_input: HandlerInput) -> Response:
-    """Handler for skill launch.
-
-    Also handles setting initial game state.
-    """
+    """Handler for skill launch."""
     session_attr = handler_input.attributes_manager.session_attributes
     session_attr['gameStarted'] = False
 

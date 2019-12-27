@@ -33,7 +33,7 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
 def is_currently_playing(handler_input: HandlerInput) -> bool:
     """Determines whether user is in the middle of a game."""
     session_attr = handler_input.attributes_manager.session_attributes
-    return session_attr.get('game_state') == 'STARTED'
+    return session_attr.get('gameStarted') == True
 
 
 handler = sb.lambda_handler()

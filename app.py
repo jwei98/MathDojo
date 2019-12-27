@@ -3,7 +3,6 @@ Lambda functions for Math Dojo Alexa skill.
 """
 # TODO: Figure out division.
 # TODO: Add other miscellaneous like Help and Fallback intents.
-# TODO: Cut down text.
 # TODO: Don't ask same question multiple times.
 import random
 from typing import Dict
@@ -33,9 +32,8 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
     session_attr = handler_input.attributes_manager.session_attributes
     session_attr['gameStarted'] = False
 
-    speech_text = ('Welcome to the Math Dojo! Would you like to play? '
-                   'If so, specify whether you\'d like to practice Addition, '
-                   'Subtraction, Multiplication, or Division')
+    speech_text = ('Welcome to the Math Dojo! Would you like to '
+                   'practice Addition, Subtraction, Multiplication, or Division?')
     reprompt = ('Would you like to practice Addition, Subtraction, '
                 'Multiplication, or Division?')
 
@@ -58,8 +56,8 @@ def choose_game_type_handler(handler_input: HandlerInput) -> Response:
     # slots will have a valid GameType (addition, subtraction, etc).
     session_attr['operator'] = gametype_to_operator[game_type]
 
-    speech_text = (f'Okay! You are about to begin your {game_type} training, '
-                   'but first, choose which number you\'d like to practice.')
+    speech_text = (f'Okay! You are about to begin your {game_type} training. '
+                   'Choose a number to practice with.')
     reprompt = ('Choose which number you\'d like to practice by saying a '
                 'number like 3 or 7.')
 
@@ -124,15 +122,14 @@ def answer_handler(handler_input: HandlerInput) -> Response:
         final_score = session_attr['score']
         speech_text += ('Congratulations! Your final score was '
                         f'{final_score} out of 10. ')
-        new_game_prompt = ('Would you like to play a new game? If so, '
-                           'tell me if you want to practice Addition, Subtraction, '
-                           'Multiplication, or Division.')
+        new_game_prompt = ('Would you like to train again in Addition, Subtraction, '
+                           'Multiplication, or Division?')
         speech_text += new_game_prompt
         reprompt = new_game_prompt
         session_attr['gameStarted'] = False
     else:
         speech_text += (
-            f'Here\'s the next question. {ask_question(session_attr)}')
+            f'Next question: {ask_question(session_attr)}')
         reprompt = ('Sorry, I didn\'t get that. {ask_question(session_attr)}')
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response

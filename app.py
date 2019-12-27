@@ -6,6 +6,7 @@ from ask_sdk_core.utils import is_request_type, is_intent_name
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
 from ask_sdk_model.ui import SimpleCard
+from typing import Dict
 
 gametype_to_operator = {'ADDITION': '+',
                         'SUBTRACTION': '-',
@@ -74,7 +75,7 @@ def table_number_intent_handler(handler_input: HandlerInput) -> Response:
                                          random.randint(0, session_attr['tableNumber']))
     session_attr['gameStarted'] = True;
 
-    speech_text = f'Great! Let\'s begin. {ask_question()}'
+    speech_text = f'Great! Let\'s begin. {ask_question(session_attr)}'
 
     reprompt = ask_question()
     handler_input.response_builder.speak(speech_text).ask(reprompt)
@@ -123,8 +124,8 @@ def answer_handler(handler_input: HandlerInput) -> Response:
         reprompt = new_game_prompt
         session_attr['gameStarted'] = False;
     else:
-        speech_text += ('Here\'s the next question. {ask_question()}')
-        reprompt = ('Sorry, I didn\'t get that. {ask_question}')
+        speech_text += ('Here\'s the next question. {ask_question(session_attr)}')
+        reprompt = ('Sorry, I didn\'t get that. {ask_question(session_attr)}')
     handler_input.response_builder.speak(speech_text).ask(reprompt)
 
 
@@ -150,9 +151,8 @@ def is_currently_playing(handler_input: HandlerInput) -> bool:
     return session_attr.get('gameStarted') == True
 
 
-def ask_question(handler_input: HandlerInput) -> str:
+def ask_question(session_attr: Dict) -> str:
     """Constructs an arithmetic equation given session attributes"""
-    session_attr = handler_input.attributes_manager.session_attributes
     string = ('What is '
               f'{session_attr["lastQuestionAsked"][0]}'
               f'{operator_to_string[session_attr["operator"]]}'

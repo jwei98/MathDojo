@@ -12,6 +12,11 @@ gametype_to_operator = {'ADDITION': '+',
                         'MULTIPLICATION': '*',
                         'DIVISION': '/'}
 
+operator_to_string = {'+': 'plus',
+                      '-': 'minus',
+                      '/': 'divided by',
+                      '*': 'times'}
+
 sb = SkillBuilder()
 
 
@@ -34,11 +39,8 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
 @sb.request_handler(can_handle_func=lambda input:
                     not currently_playing(input) and
                     is_intent_name('TableNumberIntent')(input))
-def table_number_intent_handler(handler_input):
-    """Handler for Yes Intent, only if the player said yes for
-    a new game.
-    """
-    # type: (HandlerInput) -> Response
+def table_number_intent_handler(handler_input: HandlerInput):
+    """Handler for Yes Intent, only if the player said yes for a new game."""
     session_attr = handler_input.attributes_manager.session_attributes
     session_attr['tableNumber'] = int(handler_input.request_envelope.request.intent.slots[
                                           'number'].value)
@@ -48,17 +50,9 @@ def table_number_intent_handler(handler_input):
                                          random.randint(0, session_attr['tableNumber']))
     session_attr['gameStarted'] = True;
 
-    speech_text = ('Great! Let\'s begin. What is '
-                   + session_attr['lastQuestionAsked'][0] + ' '
-                   + session_attr['operator'] + ' '
-                   + session_attr['lastQuestionAsked'][1] + '?'
-                   )
+    speech_text = 'Great! Let\'s begin. {ask_question()}'
 
-    reprompt = ('What is the solution to '
-                + session_attr['lastQuestionAsked'][0] + ' '
-                + session_attr['operator'] + ' '
-                + session_attr['lastQuestionAsked'][1] + '?'
-                )
+    reprompt = ask_question()
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -89,7 +83,7 @@ def choose_game_type_handler(handler_input: HandlerInput) -> Response:
 
 @sb.request_handler(can_handle_func=lambda input:
                     is_currently_playing(input) and
-                    is_intent_name('NumberGuessIntent')(input))
+                    is_intent_name('AnswerIntent')(input))
 def number_guess_handler(handler_input):
     """Handler for processing guess with target."""
     # type: (HandlerInput) -> Response
@@ -102,40 +96,29 @@ def number_guess_handler(handler_input):
     guess_num = int(handler_input.request_envelope.request.intent.slots[
         'number'].value)
     
-    # check answer.
     if guess_num == target_num:
-        speech_text = (
-            f'That\'s correct!'
-            )
-        session_attr['score']++
-        session_attr['numQuestionsRemaining']--
+        speech_text = 'That\'s correct!'
+        session_attr['score'] += 1
+        session_attr['numQuestionsRemaining'] -= 1
         lastQuestionAsked[1] = random.randint(0, session_attr['tableNumber'])
     else:
         speech_text = (
             f'That\'s incorrect. The answer was actually {target_num}'
             )
-        session_attr['numQuestionsRemaining']--
+        session_attr['numQuestionsRemaining'] -= 1
         lastQuestionAsked[1] = random.randint(0, session_attr['tableNumber'])
+
     if session_attr['numQuestionsRemaining'] == 0:
         final_score = session_attr['score']
         speech_text = ('Congratulations. Your final score was '
-                       f'{final_score} out of 10')
+                       f'{final_score} out of 10.')
         reprompt = ('Would you like to play a new game? If so, '
                     'tell me if you want to practice Addition, Subtraction, '
-                    'Multiplication, or Division')
-        session_attr['gameStarted'] = false;
-        session_attr['games_played'] += 1;
+                    'Multiplication, or Division.')
+        session_attr['gameStarted'] = False;
     else:
-        speech_text += ('Here\'s the next question... What is '
-                        + session_attr['lastQuestionAsked'][0] + ' '
-                        + session_attr['operator'] + ' '
-                        + session_attr['lastQuestionAsked'][1] + '?'
-                        )
-        reprompt = ('Sorry, I didn\'t get that. What is the solution to '
-                    + session_attr['lastQuestionAsked'][0] + ' '
-                    + session_attr['operator'] + ' '
-                    + session_attr['lastQuestionAsked'][1] + '?'
-                    )
+        speech_text += ('Here\'s the next question. {ask_question()}')
+        reprompt = ('Sorry, I didn\'t get that. {ask_question}')
     handler_input.response_builder.speak(speech_text).ask(reprompt)
 
 
@@ -160,5 +143,15 @@ def is_currently_playing(handler_input: HandlerInput) -> bool:
     session_attr = handler_input.attributes_manager.session_attributes
     return session_attr.get('gameStarted') == True
 
+def ask_question() -> str:
+    """Returns a string that asks the user the question: What is"""
+    session_attr = handler_input.attributes_manager.session_attributes
+    string = ('What is '
+              f'{session_attr["lastQuestionAsked][0]}'
+              f'{operator_to_string[session_attr["operator"]]}'
+              f'{session_attr["lastQuestionAsked"][1]}'
+              '?'
+              )
+    return string;
 
 handler = sb.lambda_handler()

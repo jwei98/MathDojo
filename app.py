@@ -39,17 +39,16 @@ def choose_game_type_handler(handler_input):
 
     Sets the 'operator' value in session attributes.
     """
-    game_type = (handler_input.request_envelope.request.intent.slots[
-        'GameType'].value).upper()  # Uppercase for consistency across inputs.
+    game_type = handler_input.request_envelope.request.intent.slots[
+        'GameType'].value.upper()  # Uppercase for consistency across inputs.
     session_attr = handler_input.attributes_manager.session_attributes
     # Will never yield KeyError, as Alexa should automatically ensure that
     # slots will have a valid GameType (addition, subtraction, etc).
     session_attr['operator'] = gametype_to_operator[game_type]
 
     speech_text = (f'Okay! You are about to begin your {game_type} training, '
-                   'but first, choose which number table you\'d like to '
-                   'practice.')
-    reprompt = ('Choose which table you\'d like to practice by saying a '
+                   'but first, choose which number you\'d like to practice.')
+    reprompt = ('Choose which number you\'d like to practice by saying a '
                 'number like 3 or 7.')
 
     handler_input.response_builder.speak(speech_text).ask(reprompt)

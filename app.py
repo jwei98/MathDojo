@@ -1,6 +1,8 @@
 """
 Lambda functions for Math Dojo Alexa skill.
 """
+# TODO: Figure out division.
+# TODO: Add other miscellaneous like Help and Fallback intents.
 import random
 from typing import Dict
 

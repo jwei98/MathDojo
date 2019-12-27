@@ -3,6 +3,8 @@ Lambda functions for Math Dojo Alexa skill.
 """
 # TODO: Figure out division.
 # TODO: Add other miscellaneous like Help and Fallback intents.
+# TODO: Cut down text.
+# TODO: Don't ask same question multiple times.
 import random
 from typing import Dict
 
@@ -112,7 +114,7 @@ def answer_handler(handler_input: HandlerInput) -> Response:
             f'{session_attr["lastQuestionAsked"][0]} '
             f'{operator_to_string[session_attr["operator"]]} '
             f'{session_attr["lastQuestionAsked"][1]} '
-            f'is actually {correct_answer}.'
+            f'is {correct_answer}. '
         )
         session_attr['numQuestionsRemaining'] -= 1
         session_attr['lastQuestionAsked'][1] = random.randint(

@@ -34,7 +34,7 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
 @sb.request_handler(can_handle_func=lambda input:
                     not currently_playing(input) and
                     is_intent_name('GameTypeIntent')(input))
-def choose_game_type_handler(handler_input):
+def choose_game_type_handler(handler_input: HandlerInput) -> Response:
     """Handler for choosing which game type to play.
 
     Sets the 'operator' value in session attributes.

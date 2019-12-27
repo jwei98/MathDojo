@@ -1,12 +1,14 @@
 """
 Lambda functions for Math Dojo Alexa skill.
 """
+import random
+from typing import Dict
+
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.utils import is_request_type, is_intent_name
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
 from ask_sdk_model.ui import SimpleCard
-from typing import Dict
 
 gametype_to_operator = {'ADDITION': '+',
                         'SUBTRACTION': '-',
@@ -68,12 +70,12 @@ def table_number_intent_handler(handler_input: HandlerInput) -> Response:
     """Handler for TableNumberIntent, where user specifies which number to practice"""
     session_attr = handler_input.attributes_manager.session_attributes
     session_attr['tableNumber'] = int(handler_input.request_envelope.request.intent.slots[
-                                          'number'].value)
+        'number'].value)
     session_attr['score'] = 0
     session_attr['numQuestionsRemaining'] = 10
     session_attr['lastQuestionAsked'] = (session_attr['tableNumber'],
                                          random.randint(0, session_attr['tableNumber']))
-    session_attr['gameStarted'] = True;
+    session_attr['gameStarted'] = True
 
     speech_text = f'Great! Let\'s begin. {ask_question(session_attr)}'
 
@@ -89,13 +91,13 @@ def answer_handler(handler_input: HandlerInput) -> Response:
     """Handler for processing answer to question asked"""
     session_attr = handler_input.attributes_manager.session_attributes
     correct_answer = eval(session_attr['lastQuestionAsked'][0]
-                      + session_attr['operator']
-                      + session_attr['lastQuestionAsked'][1]
-                      )
-    
+                          + session_attr['operator']
+                          + session_attr['lastQuestionAsked'][1]
+                          )
+
     guess_answer = int(handler_input.request_envelope.request.intent.slots[
         'number'].value)
-    
+
     if guess_answer == correct_answer:
         speech_text = 'That\'s correct!'
         session_attr['score'] += 1
@@ -109,22 +111,23 @@ def answer_handler(handler_input: HandlerInput) -> Response:
             f'{operator_to_string[session_attr["operator"]]} '
             f'{session_attr["lastQuestionAsked"][1]} '
             f'is actually {correct_answer}.'
-            )
+        )
         session_attr['numQuestionsRemaining'] -= 1
         lastQuestionAsked[1] = random.randint(0, session_attr['tableNumber'])
 
     if session_attr['numQuestionsRemaining'] == 0:
         final_score = session_attr['score']
         speech_text += ('Congratulations! Your final score was '
-                       f'{final_score} out of 10.')
+                        f'{final_score} out of 10.')
         new_game_prompt = ('Would you like to play a new game? If so, '
-                    'tell me if you want to practice Addition, Subtraction, '
-                    'Multiplication, or Division.')
+                           'tell me if you want to practice Addition, Subtraction, '
+                           'Multiplication, or Division.')
         speech_text += new_game_prompt
         reprompt = new_game_prompt
-        session_attr['gameStarted'] = False;
+        session_attr['gameStarted'] = False
     else:
-        speech_text += ('Here\'s the next question. {ask_question(session_attr)}')
+        speech_text += (
+            'Here\'s the next question. {ask_question(session_attr)}')
         reprompt = ('Sorry, I didn\'t get that. {ask_question(session_attr)}')
     handler_input.response_builder.speak(speech_text).ask(reprompt)
 
@@ -159,6 +162,7 @@ def ask_question(session_attr: Dict) -> str:
               f'{session_attr["lastQuestionAsked"][1]}'
               '?'
               )
-    return string;
+    return string
+
 
 handler = sb.lambda_handler()

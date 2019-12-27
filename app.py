@@ -40,7 +40,7 @@ def choose_game_type_handler(handler_input: HandlerInput) -> Response:
     Sets the 'operator' value in session attributes.
     """
     game_type = handler_input.request_envelope.request.intent.slots[
-        'GameType'].value.upper()  # Uppercase for consistency across inputs.
+        'gameType'].value.upper()  # Uppercase for consistency across inputs.
     session_attr = handler_input.attributes_manager.session_attributes
     # Will never yield KeyError, as Alexa should automatically ensure that
     # slots will have a valid GameType (addition, subtraction, etc).

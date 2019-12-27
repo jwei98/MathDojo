@@ -84,33 +84,37 @@ def choose_game_type_handler(handler_input: HandlerInput) -> Response:
 @sb.request_handler(can_handle_func=lambda input:
                     is_currently_playing(input) and
                     is_intent_name('AnswerIntent')(input))
-def number_guess_handler(handler_input):
-    """Handler for processing guess with target."""
-    # type: (HandlerInput) -> Response
+def number_guess_handler(handler_input: HandlerInput):
+    """Handler for processing answer to question asked"""
     session_attr = handler_input.attributes_manager.session_attributes
-    target_num = eval(session_attr['lastQuestionAsked'][0]
+    correct_anser = eval(session_attr['lastQuestionAsked'][0]
                       + session_attr['operator']
                       + session_attr['lastQuestionAsked'][1]
                       )
     
-    guess_num = int(handler_input.request_envelope.request.intent.slots[
+    guess_answer = int(handler_input.request_envelope.request.intent.slots[
         'number'].value)
     
-    if guess_num == target_num:
+    if guess_answer == correct_answer:
         speech_text = 'That\'s correct!'
         session_attr['score'] += 1
         session_attr['numQuestionsRemaining'] -= 1
-        lastQuestionAsked[1] = random.randint(0, session_attr['tableNumber'])
+        session_attr['lastQuestionAsked'][1] = random.randint(0,
+                                                              session_attr['tableNumber'])
     else:
         speech_text = (
-            f'That\'s incorrect. The answer was actually {target_num}'
+            f'That\'s incorrect. '
+            f'{session_attr["lastQuestionAsked"][0]} '
+            f'{operator_to_string[session_attr["operator"]]} '
+            f'{session_attr["lastQuestionAsked"][1]} '
+            f'is actually {correct_answer}.'
             )
         session_attr['numQuestionsRemaining'] -= 1
         lastQuestionAsked[1] = random.randint(0, session_attr['tableNumber'])
 
     if session_attr['numQuestionsRemaining'] == 0:
         final_score = session_attr['score']
-        speech_text = ('Congratulations. Your final score was '
+        speech_text += ('Congratulations! Your final score was '
                        f'{final_score} out of 10.')
         reprompt = ('Would you like to play a new game? If so, '
                     'tell me if you want to practice Addition, Subtraction, '

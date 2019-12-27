@@ -107,7 +107,7 @@ def answer_handler(handler_input: HandlerInput) -> Response:
     # Incorrect answer.
     else:
         speech_text = (
-            f'That\'s incorrect. {stringify_equation(session_attr) '
+            f'That\'s incorrect. {stringify_equation(session_attr)} '
             f'is {correct_answer}. '
         )
         session_attr['numQuestionsRemaining'] -= 1

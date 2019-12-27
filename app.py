@@ -61,7 +61,7 @@ def choose_game_type_handler(handler_input: HandlerInput) -> Response:
         is_intent_name('AMAZON.StopIntent')(input))
 def cancel_and_stop_intent_handler(handler_input: HandlerInput) -> Response:
     """Single handler for Cancel and Stop Intent."""
-    speech_text = 'Thanks for playing Math Dojo!!'
+    speech_text = 'Thanks for playing Math Dojo! Goodbye!'
 
     handler_input.response_builder.speak(
         speech_text).set_should_end_session(True)

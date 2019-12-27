@@ -23,7 +23,7 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
 
     speech_text = ('Welcome to the Math Dojo! Would you like to play? '
                    'If so, specify whether you\'d like to practice Addition, '
-                   ' Subtraction, Multiplication, or Division')
+                   'Subtraction, Multiplication, or Division')
     reprompt = ('Would you like to practice Addition, Subtraction, '
                 'Multiplication, or Division?')
 

@@ -34,9 +34,6 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
-
-"""Helper Functions."""
-
 @sb.request_handler(can_handle_func=lambda input:
                     not currently_playing(input) and
                     is_intent_name("TableNumberIntent")(input))
@@ -68,6 +65,10 @@ def table_number_intent_handler(handler_input):
 
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
+
+
+"""Helper Functions."""
+
 
 
 

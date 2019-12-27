@@ -37,7 +37,7 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
 
 
 @sb.request_handler(can_handle_func=lambda input:
-                    not currently_playing(input) and
+                    not is_currently_playing(input) and
                     is_intent_name('GameTypeIntent')(input))
 def choose_game_type_handler(handler_input: HandlerInput) -> Response:
     """Handler for choosing which game type to play.
@@ -61,7 +61,7 @@ def choose_game_type_handler(handler_input: HandlerInput) -> Response:
 
 
 @sb.request_handler(can_handle_func=lambda input:
-                    not currently_playing(input) and
+                    not is_currently_playing(input) and
                     is_intent_name('TableNumberIntent')(input))
 def table_number_intent_handler(handler_input: HandlerInput) -> Response:
     """Handler for TableNumberIntent, where user specifies which number to practice"""

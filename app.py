@@ -65,7 +65,7 @@ def choose_game_type_handler(handler_input: HandlerInput) -> Response:
 
 @sb.request_handler(can_handle_func=lambda input:
                     not is_currently_playing(input) and
-                    is_intent_name('TableNumberIntent')(input))
+                    is_intent_name('NumberResponseIntent')(input))
 def table_number_intent_handler(handler_input: HandlerInput) -> Response:
     """Handler for TableNumberIntent, where user specifies which number to practice"""
     session_attr = handler_input.attributes_manager.session_attributes
@@ -79,27 +79,27 @@ def table_number_intent_handler(handler_input: HandlerInput) -> Response:
 
     speech_text = f'Great! Let\'s begin. {ask_question(session_attr)}'
 
-    reprompt = ask_question()
+    reprompt = ask_question(session_attr)
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
 
 @sb.request_handler(can_handle_func=lambda input:
                     is_currently_playing(input) and
-                    is_intent_name('AnswerIntent')(input))
+                    is_intent_name('NumberResponseIntent')(input))
 def answer_handler(handler_input: HandlerInput) -> Response:
     """Handler for processing answer to question asked"""
     session_attr = handler_input.attributes_manager.session_attributes
-    correct_answer = eval(session_attr['lastQuestionAsked'][0]
+    correct_answer = eval(str(session_attr['lastQuestionAsked'][0])
                           + session_attr['operator']
-                          + session_attr['lastQuestionAsked'][1]
+                          + str(session_attr['lastQuestionAsked'][1])
                           )
 
     guess_answer = int(handler_input.request_envelope.request.intent.slots[
         'number'].value)
 
     if guess_answer == correct_answer:
-        speech_text = 'That\'s correct!'
+        speech_text = 'That\'s correct! '
         session_attr['score'] += 1
         session_attr['numQuestionsRemaining'] -= 1
         session_attr['lastQuestionAsked'][1] = random.randint(0,
@@ -113,12 +113,13 @@ def answer_handler(handler_input: HandlerInput) -> Response:
             f'is actually {correct_answer}.'
         )
         session_attr['numQuestionsRemaining'] -= 1
-        lastQuestionAsked[1] = random.randint(0, session_attr['tableNumber'])
+        session_attr['lastQuestionAsked'][1] = random.randint(
+            0, session_attr['tableNumber'])
 
     if session_attr['numQuestionsRemaining'] == 0:
         final_score = session_attr['score']
         speech_text += ('Congratulations! Your final score was '
-                        f'{final_score} out of 10.')
+                        f'{final_score} out of 10. ')
         new_game_prompt = ('Would you like to play a new game? If so, '
                            'tell me if you want to practice Addition, Subtraction, '
                            'Multiplication, or Division.')
@@ -127,9 +128,10 @@ def answer_handler(handler_input: HandlerInput) -> Response:
         session_attr['gameStarted'] = False
     else:
         speech_text += (
-            'Here\'s the next question. {ask_question(session_attr)}')
+            f'Here\'s the next question. {ask_question(session_attr)}')
         reprompt = ('Sorry, I didn\'t get that. {ask_question(session_attr)}')
     handler_input.response_builder.speak(speech_text).ask(reprompt)
+    return handler_input.response_builder.response
 
 
 @sb.request_handler(
@@ -145,6 +147,14 @@ def cancel_and_stop_intent_handler(handler_input: HandlerInput) -> Response:
     return handler_input.response_builder.response
 
 
+@sb.request_handler(can_handle_func=is_request_type("SessionEndedRequest"))
+def session_ended_request_handler(handler_input):
+    """Handler for Session End."""
+    # type: (HandlerInput) -> Response
+    speech_text = 'Thanks for playing Math Dojo! Goodbye!'
+    return handler_input.response_builder.response
+
+
 """Helper Functions."""
 
 
@@ -157,10 +167,9 @@ def is_currently_playing(handler_input: HandlerInput) -> bool:
 def ask_question(session_attr: Dict) -> str:
     """Constructs an arithmetic equation given session attributes"""
     string = ('What is '
-              f'{session_attr["lastQuestionAsked"][0]}'
-              f'{operator_to_string[session_attr["operator"]]}'
-              f'{session_attr["lastQuestionAsked"][1]}'
-              '?'
+              f'{session_attr["lastQuestionAsked"][0]} '
+              f'{operator_to_string[session_attr["operator"]]} '
+              f'{session_attr["lastQuestionAsked"][1]}?'
               )
     return string
 

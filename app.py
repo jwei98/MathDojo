@@ -82,7 +82,7 @@ def table_number_intent_handler(handler_input: HandlerInput) -> Response:
     speech_text = ('Great! Let\'s begin. What is '
                    f'{stringify_equation(session_attr)}?')
 
-    reprompt = ask_question(session_attr)
+    reprompt = f'What is stringify_equation(session_attr)?'
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -126,8 +126,9 @@ def answer_handler(handler_input: HandlerInput) -> Response:
     else:
         session_attr['lastQuestionAsked'] = new_question(session_attr)
         speech_text += (
-            f'Next question: {ask_question(session_attr)}')
-        reprompt = ('Sorry, I didn\'t get that. {ask_question(session_attr)}')
+            f'Next question: What is {stringify_equation(session_attr)}?')
+        reprompt = ('Sorry, I didn\'t get that. What is '
+                    f'{stringify_equation(session_attr)}?')
 
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response

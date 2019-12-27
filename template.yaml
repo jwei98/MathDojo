@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  MathDojo:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: MathDojo
+      Handler: app.handler
+      Runtime: python3.8
+      CodeUri: ./
+      Layers:
+        - arn:aws:lambda:us-east-1:085499095529:layer:MathDojo:1
+

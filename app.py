@@ -157,6 +157,7 @@ def session_ended_request_handler(handler_input: HandlerInput) -> Response:
 
 """Fallback Handlers"""
 
+
 @sb.request_handler(can_handle_func=lambda input:
                     is_intent_name('AMAZON.FallbackIntent')(input) or
                     is_intent_name('AMAZON.YesIntent')(input) or
@@ -167,10 +168,10 @@ def fallback_handler(handler_input: HandlerInput) -> Response:
     session_attr = handler_input.attributes_manager.session_attributes
 
     if ('gameState' in session_attr and
-            session_attr['gameState']== True):
-        speech_text = 
-            f'The Math Dojo skill can\'t help you with that.
-            {ask_question(session_attr)}  '
+         session_attr['gameState']):
+        speech_text = (
+             'The Math Dojo skill can\'t help you with that.'
+             f'{ask_question(session_attr)}  ')
         reprompt = f'{ask_question(session_attr)}'
     else:
         speech_text = (
@@ -193,7 +194,7 @@ def unhandled_intent_handler(handler_input: HandlerInput) -> Response:
 
 @sb.exception_handler(can_handle_func=lambda i, e: True)
 def all_exception_handler(handler_input: HandlerInput,
-                          exception: Exception)-> Reponse:
+                          exception: Exception) -> Reponse:
     """Catch all exception handler,
     respond with custom message. Option to log Exception in the future.
     """
@@ -209,7 +210,7 @@ def all_exception_handler(handler_input: HandlerInput,
 def is_currently_playing(handler_input: HandlerInput) -> bool:
     """Determines whether user is in the middle of a game."""
     session_attr = handler_input.attributes_manager.session_attributes
-    return session_attr.get('gameStarted') == True
+    return session_attr.get('gameStarted')
 
 
 def stringify_equation(session_attr: Dict) -> str:

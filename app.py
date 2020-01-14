@@ -148,11 +148,59 @@ def cancel_and_stop_intent_handler(handler_input: HandlerInput) -> Response:
     return handler_input.response_builder.response
 
 
-@sb.request_handler(can_handle_func=is_request_type("SessionEndedRequest"))
-def session_ended_request_handler(handler_input):
+@sb.request_handler(can_handle_func=is_request_type('SessionEndedRequest'))
+def session_ended_request_handler(handler_input: HandlerInput) -> Response:
     """Handler for Session End."""
     # type: (HandlerInput) -> Response
     speech_text = 'Thanks for playing Math Dojo! Goodbye!'
+    return handler_input.response_builder.response
+
+
+"""Fallback Handlers"""
+
+@sb.request_handler(can_handle_func=lambda input:
+                    is_intent_name('AMAZON.FallbackIntent')(input) or
+                    is_intent_name('AMAZON.YesIntent')(input) or
+                    is_intent_name('AMAZON.NoIntent')(input))
+def fallback_handler(handler_input: HandlerInput) -> Response:
+    """ Fallback Handler deals with unexpected utterances"""
+    # type: (HandlerInput) -> Response
+    session_attr = handler_input.attributes_manager.session_attributes
+
+    if ('gameState' in session_attr and
+            session_attr['gameState']== True):
+        speech_text = 
+            f'The Math Dojo skill can\'t help you with that.
+            {ask_question(session_attr)}  '
+        reprompt = f'{ask_question(session_attr)}'
+    else:
+        speech_text = (
+            'The Math Dojo skill can\'t help you with that.  '
+            'It can help you practice your math skills.'
+            'Would you like to play?')
+        reprompt = 'Say yes to start the game or no to quit.'
+    handler_input.response_builder.speak(speech_text).ask(reprompt)
+    return handler_input.response_builder.response
+
+
+@sb.request_handler(can_handle_func=lambda input: True)
+def unhandled_intent_handler(handler_input: HandlerInput) -> Response:
+    """Handler for all other unhandled requests."""
+    # type: (HandlerInput) -> Response
+    speech = 'Say yes to continue or no to end the game!!'
+    handler_input.response_builder.speak(speech).ask(speech)
+    return handler_input.response_builder.response
+
+
+@sb.exception_handler(can_handle_func=lambda i, e: True)
+def all_exception_handler(handler_input: HandlerInput,
+                          exception: Exception)-> Reponse:
+    """Catch all exception handler,
+    respond with custom message. Option to log Exception in the future.
+    """
+    # type: (HandlerInput, Exception) -> Response
+    speech = "Sorry, I can't understand that. Please say again!!"
+    handler_input.response_builder.speak(speech).ask(speech)
     return handler_input.response_builder.response
 
 

@@ -5,7 +5,7 @@ Lambda functions for Math Dojo Alexa skill.
 # TODO: Add other miscellaneous like Help and Fallback intents.
 # TODO: Don't ask same question multiple times.
 import random
-from typing import Dict
+from typing import Dict, Tuple
 
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.utils import is_request_type, is_intent_name
@@ -32,8 +32,8 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
     session_attr = handler_input.attributes_manager.session_attributes
     session_attr['gameStarted'] = False
 
-    speech_text = ('Welcome to the Math Dojo! Would you like to '
-                   'practice Addition, Subtraction, Multiplication, or Division?')
+    speech_text = ('Welcome to the Math Dojo! Would you like to practice '
+                   'Addition, Subtraction, Multiplication, or Division?')
     reprompt = ('Would you like to practice Addition, Subtraction, '
                 'Multiplication, or Division?')
 
@@ -69,19 +69,20 @@ def choose_game_type_handler(handler_input: HandlerInput) -> Response:
                     not is_currently_playing(input) and
                     is_intent_name('NumberResponseIntent')(input))
 def table_number_intent_handler(handler_input: HandlerInput) -> Response:
-    """Handler for TableNumberIntent, where user specifies which number to practice"""
+    """Handles user specifying which number to practice."""
     session_attr = handler_input.attributes_manager.session_attributes
-    session_attr['tableNumber'] = int(handler_input.request_envelope.request.intent.slots[
-        'number'].value)
+    session_attr['tableNumber'] = int(
+        handler_input.request_envelope.request.intent.slots['number'].value
+    )
     session_attr['score'] = 0
     session_attr['numQuestionsRemaining'] = 10
-    session_attr['lastQuestionAsked'] = (session_attr['tableNumber'],
-                                         random.randint(0, session_attr['tableNumber']))
+    session_attr['lastQuestionAsked'] = new_question(session_attr)
     session_attr['gameStarted'] = True
 
-    speech_text = f'Great! Let\'s begin. {ask_question(session_attr)}'
+    speech_text = ('Great! Let\'s begin. What is '
+                   f'{stringify_equation(session_attr)}?')
 
-    reprompt = ask_question(session_attr)
+    reprompt = f'What is stringify_equation(session_attr)?'
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -90,12 +91,11 @@ def table_number_intent_handler(handler_input: HandlerInput) -> Response:
                     is_currently_playing(input) and
                     is_intent_name('NumberResponseIntent')(input))
 def answer_handler(handler_input: HandlerInput) -> Response:
-    """Handler for processing answer to question asked"""
+    """Handler for processing answer to question asked."""
     session_attr = handler_input.attributes_manager.session_attributes
     correct_answer = eval(str(session_attr['lastQuestionAsked'][0])
                           + session_attr['operator']
-                          + str(session_attr['lastQuestionAsked'][1])
-                          )
+                          + str(session_attr['lastQuestionAsked'][1]))
 
     guess_answer = int(handler_input.request_envelope.request.intent.slots[
         'number'].value)
@@ -104,33 +104,32 @@ def answer_handler(handler_input: HandlerInput) -> Response:
         speech_text = 'That\'s correct! '
         session_attr['score'] += 1
         session_attr['numQuestionsRemaining'] -= 1
-        session_attr['lastQuestionAsked'][1] = random.randint(0,
-                                                              session_attr['tableNumber'])
+    # Incorrect answer.
     else:
         speech_text = (
-            'That\'s incorrect. '
-            f'{session_attr["lastQuestionAsked"][0]} '
-            f'{operator_to_string[session_attr["operator"]]} '
-            f'{session_attr["lastQuestionAsked"][1]} '
+            f'That\'s incorrect. {stringify_equation(session_attr)} '
             f'is {correct_answer}. '
         )
         session_attr['numQuestionsRemaining'] -= 1
-        session_attr['lastQuestionAsked'][1] = random.randint(
-            0, session_attr['tableNumber'])
 
+    # Game over.
     if session_attr['numQuestionsRemaining'] == 0:
         final_score = session_attr['score']
         speech_text += ('Congratulations! Your final score was '
                         f'{final_score} out of 10. ')
-        new_game_prompt = ('Would you like to train again in Addition, Subtraction, '
-                           'Multiplication, or Division?')
+        new_game_prompt = ('Would you like to train again in Addition, '
+                           'Subtraction, Multiplication, or Division?')
         speech_text += new_game_prompt
         reprompt = new_game_prompt
         session_attr['gameStarted'] = False
+    # Game continues...
     else:
+        session_attr['lastQuestionAsked'] = new_question(session_attr)
         speech_text += (
-            f'Next question: {ask_question(session_attr)}')
-        reprompt = ('Sorry, I didn\'t get that. {ask_question(session_attr)}')
+            f'Next question: What is {stringify_equation(session_attr)}?')
+        reprompt = ('Sorry, I didn\'t get that. What is '
+                    f'{stringify_equation(session_attr)}?')
+
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -213,14 +212,24 @@ def is_currently_playing(handler_input: HandlerInput) -> bool:
     return session_attr.get('gameStarted') == True
 
 
-def ask_question(session_attr: Dict) -> str:
-    """Constructs an arithmetic equation given session attributes"""
-    string = ('What is '
-              f'{session_attr["lastQuestionAsked"][0]} '
-              f'{operator_to_string[session_attr["operator"]]} '
-              f'{session_attr["lastQuestionAsked"][1]}?'
-              )
+def stringify_equation(session_attr: Dict) -> str:
+    """Constructs an arithmetic equation given session attributes."""
+    return (f'{session_attr["lastQuestionAsked"][0]} '
+            f'{operator_to_string[session_attr["operator"]]} '
+            f'{session_attr["lastQuestionAsked"][1]}')
     return string
+
+
+def new_question(session_attr: Dict) -> Tuple[int, int]:
+    """Returns a new question based on the Game Type.
+
+    Division is a special case.
+    """
+    if session_attr['operator'] == '/':
+        return (random.randint(0, 15) * session_attr['tableNumber'],
+                session_attr['tableNumber'])
+    return (session_attr['tableNumber'],
+            random.randint(0, session_attr['tableNumber']))
 
 
 handler = sb.lambda_handler()

@@ -56,8 +56,7 @@ def choose_game_type_handler(handler_input: HandlerInput) -> Response:
     # slots will have a valid GameType (addition, subtraction, etc).
     session_attr['operator'] = gametype_to_operator[game_type]
 
-    speech_text = (f'Okay! You are about to begin your {game_type} training. '
-                   'Choose a number to practice with.')
+    speech_text = f'Okay! Choose a number to practice your {game_type} with.'
     reprompt = ('Choose which number you\'d like to practice by saying a '
                 'number like 3 or 7.')
 
@@ -77,12 +76,13 @@ def table_number_intent_handler(handler_input: HandlerInput) -> Response:
     session_attr['score'] = 0
     session_attr['numQuestionsRemaining'] = 10
     session_attr['lastQuestionAsked'] = new_question(session_attr)
+    session_attr['questionsAsked'] = []
     session_attr['gameStarted'] = True
 
     speech_text = ('Great! Let\'s begin. What is '
                    f'{stringify_equation(session_attr)}?')
 
-    reprompt = f'What is stringify_equation(session_attr)?'
+    reprompt = f'What is {stringify_equation(session_attr)}?'
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -225,11 +225,21 @@ def new_question(session_attr: Dict) -> Tuple[int, int]:
 
     Division is a special case.
     """
+    # if tableNumber > 9, create a list from 0 - tableNumber then choose from
+    # this list
     if session_attr['operator'] == '/':
-        return (random.randint(0, 15) * session_attr['tableNumber'],
+        num = random.randint(0, 15)
+        while(num in session_attr['questionsAsked']):
+            num = random.randint(0, 15)
+        session_attr['questionsAsked'].append(num)
+        return (num * session_attr['tableNumber'],
                 session_attr['tableNumber'])
-    return (session_attr['tableNumber'],
-            random.randint(0, session_attr['tableNumber']))
+    num = random.randint(0, session_attr['tableNumber'])
+    if(session_attr['tableNumber'] > 8):
+        while(num in session_attr['questionsAsked']):
+            num = random.randint(0, session_attr['tableNumber'])
+        session_attr['questionsAsked'].append(num)
+    return (session_attr['tableNumber'], num)
 
 
 handler = sb.lambda_handler()

@@ -56,8 +56,7 @@ def choose_game_type_handler(handler_input: HandlerInput) -> Response:
     # slots will have a valid GameType (addition, subtraction, etc).
     session_attr['operator'] = gametype_to_operator[game_type]
 
-    speech_text = (f'Okay! You are about to begin your {game_type} training. '
-                   'Choose a number to practice with.')
+    speech_text = f'Okay! Choose a number to practice your {game_type} with.'
     reprompt = ('Choose which number you\'d like to practice by saying a '
                 'number like 3 or 7.')
 
@@ -77,12 +76,13 @@ def table_number_intent_handler(handler_input: HandlerInput) -> Response:
     session_attr['score'] = 0
     session_attr['numQuestionsRemaining'] = 10
     session_attr['lastQuestionAsked'] = new_question(session_attr)
+    session_attr['questionsAsked'] = []
     session_attr['gameStarted'] = True
 
     speech_text = ('Great! Let\'s begin. What is '
                    f'{stringify_equation(session_attr)}?')
 
-    reprompt = f'What is stringify_equation(session_attr)?'
+    reprompt = f'What is {stringify_equation(session_attr)}?'
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -147,13 +147,70 @@ def cancel_and_stop_intent_handler(handler_input: HandlerInput) -> Response:
     return handler_input.response_builder.response
 
 
+@sb.request_handler(can_handle_func=is_request_type('SessionEndedRequest'))
+def session_ended_request_handler(handler_input: HandlerInput) -> Response:
+    """Handler for Session End."""
+    # type: (HandlerInput) -> Response
+    speech_text = 'Thanks for playing Math Dojo! Goodbye!'
+    handler_input.response_builder.speak(
+        speech_text).set_should_end_session(True)
+    return handler_input.response_builder.response
+
+
+"""Fallback Handlers"""
+
+
+@sb.request_handler(can_handle_func=lambda input:
+                    is_intent_name('AMAZON.FallbackIntent')(input) or
+                    is_intent_name('AMAZON.YesIntent')(input) or
+                    is_intent_name('AMAZON.NoIntent')(input))
+def fallback_handler(handler_input: HandlerInput) -> Response:
+    """ Fallback Handler deals with unexpected utterances"""
+    # type: (HandlerInput) -> Response
+    session_attr = handler_input.attributes_manager.session_attributes
+    if ('gameState' in session_attr and session_attr['gameState']):
+        speech_text = (
+             'The Math Dojo skill can\'t help you with that.'
+             f'{new_question(session_attr)}  ')
+        reprompt = f'{new_question(session_attr)}'
+    else:
+        speech_text = (
+            'The Math Dojo skill can\'t help you with that.  '
+            'It can help you practice your math skills.'
+            'Would you like to play?')
+        reprompt = 'Say yes to start the game or no to quit.'
+    handler_input.response_builder.speak(speech_text).ask(reprompt)
+    return handler_input.response_builder.response
+
+
+@sb.request_handler(can_handle_func=lambda input: True)
+def unhandled_intent_handler(handler_input: HandlerInput) -> Response:
+    """Handler for all other unhandled requests."""
+    # type: (HandlerInput) -> Response
+    speech = 'Say yes to continue or no to end the game!!'
+    handler_input.response_builder.speak(speech).ask(speech)
+    return handler_input.response_builder.response
+
+
+@sb.exception_handler(can_handle_func=lambda i, e: True)
+def all_exception_handler(handler_input: HandlerInput,
+                          exception: Exception) -> Response:
+    """Catch all exception handler,
+    respond with custom message. Option to log Exception in the future.
+    """
+    # type: (HandlerInput, Exception) -> Response
+    speech = "Sorry, I can't understand that. Please say again!!"
+    handler_input.response_builder.speak(speech).ask(speech)
+    return handler_input.response_builder.response
+
+
 """Helper Functions."""
 
 
 def is_currently_playing(handler_input: HandlerInput) -> bool:
     """Determines whether user is in the middle of a game."""
     session_attr = handler_input.attributes_manager.session_attributes
-    return session_attr.get('gameStarted') == True
+    return session_attr.get('gameStarted')
 
 
 def stringify_equation(session_attr: Dict) -> str:
@@ -161,7 +218,6 @@ def stringify_equation(session_attr: Dict) -> str:
     return (f'{session_attr["lastQuestionAsked"][0]} '
             f'{operator_to_string[session_attr["operator"]]} '
             f'{session_attr["lastQuestionAsked"][1]}')
-    return string
 
 
 def new_question(session_attr: Dict) -> Tuple[int, int]:
@@ -169,11 +225,21 @@ def new_question(session_attr: Dict) -> Tuple[int, int]:
 
     Division is a special case.
     """
+    # if tableNumber > 9, create a list from 0 - tableNumber then choose from
+    # this list
     if session_attr['operator'] == '/':
-        return (random.randint(0, 15) * session_attr['tableNumber'],
+        num = random.randint(0, 15)
+        while(num in session_attr['questionsAsked']):
+            num = random.randint(0, 15)
+        session_attr['questionsAsked'].append(num)
+        return (num * session_attr['tableNumber'],
                 session_attr['tableNumber'])
-    return (session_attr['tableNumber'],
-            random.randint(0, session_attr['tableNumber']))
+    num = random.randint(0, session_attr['tableNumber'])
+    if(session_attr['tableNumber'] > 8):
+        while(num in session_attr['questionsAsked']):
+            num = random.randint(0, session_attr['tableNumber'])
+        session_attr['questionsAsked'].append(num)
+    return (session_attr['tableNumber'], num)
 
 
 handler = sb.lambda_handler()

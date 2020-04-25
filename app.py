@@ -179,8 +179,8 @@ def fallback_handler(handler_input: HandlerInput) -> Response:
     session_attr = handler_input.attributes_manager.session_attributes
     if ('gameState' in session_attr and session_attr['gameState']):
         speech_text = (
-             'The Math Dojo skill can\'t help you with that.'
-             f'{new_question(session_attr)}  ')
+            'The Math Dojo skill can\'t help you with that.'
+            f'{new_question(session_attr)}  ')
         reprompt = f'{new_question(session_attr)}'
     else:
         speech_text = (
@@ -235,9 +235,9 @@ def new_question(session_attr: Dict) -> Tuple[int, int]:
 
     Division is a special case.
     """
-    num = random.randint(1, 15)
+    num = random.randint(0, 15)
     while(num in session_attr['questionsAsked']):
-        num = random.randint(1, 15)
+        num = random.randint(0, 15)
     session_attr['questionsAsked'].append(num)
     if session_attr['operator'] == '/':
         return (num * session_attr['tableNumber'], session_attr['tableNumber'])

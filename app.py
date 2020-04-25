@@ -78,14 +78,13 @@ def table_number_intent_handler(handler_input: HandlerInput) -> Response:
 
     if session_attr['tableNumber'] < 1:
         speech_text = 'Try picking a number greater than 0'
-        reprompt = ('Choose a number to practice your '
-                    f'{session_attr["gameType"]} with.')
+        reprompt = ('Choose a number greater than 0.')
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
     session_attr['score'] = 0
     session_attr['numQuestionsRemaining'] = 10
-    session_attr['lastQuestionAsked'] = new_question(session_attr)
     session_attr['questionsAsked'] = []
+    session_attr['lastQuestionAsked'] = new_question(session_attr)
     session_attr['gameStarted'] = True
 
     speech_text = ('Great! Let\'s begin. What is '

@@ -180,8 +180,8 @@ def fallback_handler(handler_input: HandlerInput) -> Response:
     """ Fallback Handler deals with unexpected utterances"""
     # type: (HandlerInput) -> Response
     session_attr = handler_input.attributes_manager.session_attributes
-    speech_text = session_attr.get('lastSpokenPhrase', 'Sorry, I didn\'t get
-                                   that. Please try again!')
+    speech_text = session_attr.get('lastSpokenPhrase', 'Sorry, I didn\'t get '
+                                   'that. Please try again!')
     reprompt = speech_text
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response

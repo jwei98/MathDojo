@@ -38,7 +38,7 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
                 'Addition, Subtraction, '
                 'Multiplication, or Division?')
 
-    session_attr['lastSpokenPhrase'] = speech_text
+    session_attr['lastReprompt'] = reprompt
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -63,7 +63,7 @@ def choose_game_type_handler(handler_input: HandlerInput) -> Response:
     reprompt = ('Choose which number you\'d like to practice by saying a '
                 'number like 3 or 7.')
 
-    session_attr['lastSpokenPhrase'] = speech_text
+    session_attr['lastReprompt'] = reprompt
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -93,7 +93,7 @@ def table_number_intent_handler(handler_input: HandlerInput) -> Response:
                    f'{stringify_equation(session_attr)}?')
     reprompt = f'What is {stringify_equation(session_attr)}?'
 
-    session_attr['lastSpokenPhrase'] = speech_text
+    session_attr['lastReprompt'] = reprompt
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -141,7 +141,7 @@ def answer_handler(handler_input: HandlerInput) -> Response:
         reprompt = ('Sorry, I didn\'t get that. What is '
                     f'{stringify_equation(session_attr)}?')
 
-    session_attr['lastSpokenPhrase'] = speech_text
+    session_attr['lastReprompt'] = reprompt
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -180,8 +180,8 @@ def fallback_handler(handler_input: HandlerInput) -> Response:
     """ Fallback Handler deals with unexpected utterances"""
     # type: (HandlerInput) -> Response
     session_attr = handler_input.attributes_manager.session_attributes
-    speech_text = session_attr.get('lastSpokenPhrase', 'Sorry, I didn\'t get '
-                                   'that. Please try again!')
+    speech_text = ('Sorry, we couldn\'t understand that. '
+                   '\(session_attr.get('lastReprompt'))')
     reprompt = speech_text
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response

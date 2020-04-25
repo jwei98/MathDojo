@@ -38,6 +38,7 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
                 'Addition, Subtraction, '
                 'Multiplication, or Division?')
 
+    session_attr['lastSpokenPhrase'] = speech_text
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -62,6 +63,7 @@ def choose_game_type_handler(handler_input: HandlerInput) -> Response:
     reprompt = ('Choose which number you\'d like to practice by saying a '
                 'number like 3 or 7.')
 
+    session_attr['lastSpokenPhrase'] = speech_text
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -81,16 +83,17 @@ def table_number_intent_handler(handler_input: HandlerInput) -> Response:
         reprompt = ('Choose a number greater than 0.')
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
+    session_attr['gameStarted'] = True
     session_attr['score'] = 0
     session_attr['numQuestionsRemaining'] = 10
     session_attr['questionsAsked'] = []
     session_attr['lastQuestionAsked'] = new_question(session_attr)
-    session_attr['gameStarted'] = True
 
     speech_text = ('Great! Let\'s begin. What is '
                    f'{stringify_equation(session_attr)}?')
-
     reprompt = f'What is {stringify_equation(session_attr)}?'
+
+    session_attr['lastSpokenPhrase'] = speech_text
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -138,6 +141,7 @@ def answer_handler(handler_input: HandlerInput) -> Response:
         reprompt = ('Sorry, I didn\'t get that. What is '
                     f'{stringify_equation(session_attr)}?')
 
+    session_attr['lastSpokenPhrase'] = speech_text
     handler_input.response_builder.speak(speech_text).ask(reprompt)
     return handler_input.response_builder.response
 
@@ -176,28 +180,10 @@ def fallback_handler(handler_input: HandlerInput) -> Response:
     """ Fallback Handler deals with unexpected utterances"""
     # type: (HandlerInput) -> Response
     session_attr = handler_input.attributes_manager.session_attributes
-    if ('gameState' in session_attr and session_attr['gameState']):
-        speech_text = (
-            'The Math Dojo skill can\'t help you with that.'
-            f'{new_question(session_attr)}  ')
-        reprompt = f'{new_question(session_attr)}'
-    else:
-        speech_text = (
-            'The Math Dojo skill can\'t help you with that.  '
-            'It can help you practice your math skills.'
-            'Would you like to play?')
-        reprompt = 'Say yes to start the game or no to quit.'
+    speech_text = session_attr.get('lastSpokenPhrase', 'Sorry, I didn\'t get
+                                   that. Please try again!')
+    reprompt = speech_text
     handler_input.response_builder.speak(speech_text).ask(reprompt)
-    return handler_input.response_builder.response
-
-
-@sb.request_handler(can_handle_func=lambda input: True)
-def unhandled_intent_handler(handler_input: HandlerInput) -> Response:
-    """Handler for all other unhandled requests."""
-    # type: (HandlerInput) -> Response
-    session_attr = handler_input.attributes_manager.sessions_attributes
-    speech = 'Say yes to continue or no to end the game!'
-    handler_input.response_builder.speak(speech).ask(speech)
     return handler_input.response_builder.response
 
 
@@ -208,7 +194,7 @@ def all_exception_handler(handler_input: HandlerInput,
     respond with custom message. Option to log Exception in the future.
     """
     # type: (HandlerInput, Exception) -> Response
-    speech = "Sorry, I can't understand that. Please say again!"
+    speech = 'Sorry, I didn\'t understand that. Please try again!'
     handler_input.response_builder.speak(speech).ask(speech)
     return handler_input.response_builder.response
 

@@ -34,7 +34,8 @@ def launch_request_handler(handler_input: HandlerInput) -> Response:
 
     speech_text = ('Welcome to the Math Dojo! Would you like to practice '
                    'Addition, Subtraction, Multiplication, or Division?')
-    reprompt = ('Would you like to practice Addition, Subtraction, '
+    reprompt = ('Would you like to practice '
+                'Addition, Subtraction, '
                 'Multiplication, or Division?')
 
     handler_input.response_builder.speak(speech_text).ask(reprompt)
@@ -52,6 +53,7 @@ def choose_game_type_handler(handler_input: HandlerInput) -> Response:
     game_type = handler_input.request_envelope.request.intent.slots[
         'gameType'].value.upper()  # Uppercase for consistency across inputs.
     session_attr = handler_input.attributes_manager.session_attributes
+    session_attr['gameType'] = game_type
     # Will never yield KeyError, as Alexa should automatically ensure that
     # slots will have a valid GameType (addition, subtraction, etc).
     session_attr['operator'] = gametype_to_operator[game_type]
@@ -73,6 +75,13 @@ def table_number_intent_handler(handler_input: HandlerInput) -> Response:
     session_attr['tableNumber'] = int(
         handler_input.request_envelope.request.intent.slots['number'].value
     )
+
+    if session_attr['tableNumber'] < 1:
+        speech_text = 'Try picking a number greater than 0'
+        reprompt = ('Choose a number to practice your '
+                    f'{session_attr["gameType"]} with.')
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
     session_attr['score'] = 0
     session_attr['numQuestionsRemaining'] = 10
     session_attr['lastQuestionAsked'] = new_question(session_attr)
@@ -187,7 +196,8 @@ def fallback_handler(handler_input: HandlerInput) -> Response:
 def unhandled_intent_handler(handler_input: HandlerInput) -> Response:
     """Handler for all other unhandled requests."""
     # type: (HandlerInput) -> Response
-    speech = 'Say yes to continue or no to end the game!!'
+    session_attr = handler_input.attributes_manager.sessions_attributes
+    speech = 'Say yes to continue or no to end the game!'
     handler_input.response_builder.speak(speech).ask(speech)
     return handler_input.response_builder.response
 
@@ -199,7 +209,7 @@ def all_exception_handler(handler_input: HandlerInput,
     respond with custom message. Option to log Exception in the future.
     """
     # type: (HandlerInput, Exception) -> Response
-    speech = "Sorry, I can't understand that. Please say again!!"
+    speech = "Sorry, I can't understand that. Please say again!"
     handler_input.response_builder.speak(speech).ask(speech)
     return handler_input.response_builder.response
 
@@ -225,20 +235,12 @@ def new_question(session_attr: Dict) -> Tuple[int, int]:
 
     Division is a special case.
     """
-    # if tableNumber > 9, create a list from 0 - tableNumber then choose from
-    # this list
+    num = random.randint(1, 15)
+    while(num in session_attr['questionsAsked']):
+        num = random.randint(1, 15)
+    session_attr['questionsAsked'].append(num)
     if session_attr['operator'] == '/':
-        num = random.randint(0, 15)
-        while(num in session_attr['questionsAsked']):
-            num = random.randint(0, 15)
-        session_attr['questionsAsked'].append(num)
-        return (num * session_attr['tableNumber'],
-                session_attr['tableNumber'])
-    num = random.randint(0, session_attr['tableNumber'])
-    if(session_attr['tableNumber'] > 8):
-        while(num in session_attr['questionsAsked']):
-            num = random.randint(0, session_attr['tableNumber'])
-        session_attr['questionsAsked'].append(num)
+        return (num * session_attr['tableNumber'], session_attr['tableNumber'])
     return (session_attr['tableNumber'], num)
 
 

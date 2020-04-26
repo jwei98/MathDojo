@@ -128,10 +128,8 @@ def answer_handler(handler_input: HandlerInput) -> Response:
         final_score = session_attr['score']
         speech_text += ('Congratulations! Your final score was '
                         f'{final_score} out of 10. ')
-        new_game_prompt = ('If you would like to train again, just say '
-                           'whether you\'d like to practice Addition, '
-                           'Subtraction, Multiplication, or Division. '
-                           'If you\'d like to quit, just say stop or cancel.')
+        new_game_prompt = ('Would you like to train again in Addition, '
+                           'Subtraction, Multiplication, or Division?')
         speech_text += new_game_prompt
         reprompt = new_game_prompt
         session_attr['gameStarted'] = False
